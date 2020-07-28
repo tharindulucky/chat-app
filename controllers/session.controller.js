@@ -124,7 +124,60 @@ function getMySessions(req, res){
 }
 
 
+
+function getSession(req, res){
+
+    const id = req.params.id;
+
+    models.Session.findOne({
+        include: [{
+            model: models.SessionUser, 
+            as: 'participants',
+            include: [{
+                model: models.User, 
+                as: 'userData',
+                attributes: ['id','name','email'],
+            }]
+        },
+        {
+            model: models.Message, 
+            as: 'messages'
+        }],
+        where:{id:id, authorId: req.userData.userId}
+    }).then(session => {
+
+        let contact = null;
+        session.participants.map(participant => {
+            if(participant.userId != req.userData.userId){
+                contact = participant;
+            }
+        });
+
+        return res.status(200).json({
+            message: "Session opened",
+            data: {
+                id: session.id,
+                authorId: session.authorId,
+                status: session.status,
+                createdAt: session.createdAt,
+                updatedAt: session.updatedAt,
+                contact: contact,
+                messages: session.messages
+            }
+        });
+    }).catch(error => {
+        console.log(error);
+        return res.status(500).json({
+            message: "Something went wrong",
+            error: error
+        });
+    });
+}
+
+
+
 module.exports = {
     createSession: createSession,
-    getMySessions: getMySessions
+    getMySessions: getMySessions,
+    getSession: getSession
 }

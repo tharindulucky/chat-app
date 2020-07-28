@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 
 const userRoutes = require('./routes/users');
 const sessionRoutes = require('./routes/sessions');
+const messageRoutes = require('./routes/messages');
 
 const app = express();
 
@@ -23,5 +24,24 @@ app.use(bodyParser.json());
 
 app.use('/users', userRoutes);
 app.use('/sessions', sessionRoutes);
+app.use('/messages', messageRoutes);
+
+
+/*
+Error Handling
+ */
+app.use((req, response, next) => {
+    const error = new Error('Not found!');
+    error.status = 404;
+    next(error);
+});
+
+app.use((error, req, res, next) => {
+    res.status(error.status || 500).json({
+        error: {
+            message: error.message
+        }
+    });
+});
 
 module.exports = app;

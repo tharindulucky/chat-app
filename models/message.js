@@ -1,13 +1,13 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const SessionsMessage = sequelize.define('SessionsMessage', {
+  const Message = sequelize.define('Message', {
     content: DataTypes.TEXT,
     sessionId: DataTypes.INTEGER,
     authorId: DataTypes.INTEGER,
     status: DataTypes.STRING
   }, {});
-  SessionsMessage.associate = function(models) {
+  Message.associate = function(models) {
     // associations can be defined here
   };
-  return SessionsMessage;
+  return Message;
 };

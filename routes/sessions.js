@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.post('/create', checkauth, sessionController.createSession);
 router.get('/', checkauth, sessionController.getMySessions);
+router.get('/:id', checkauth, sessionController.getSession);
 
 module.exports = router;
