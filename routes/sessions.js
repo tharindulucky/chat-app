@@ -5,5 +5,6 @@ const checkauth = require('../middlewares/check-auth');
 const router = express.Router();
 
 router.post('/create', checkauth, sessionController.createSession);
+router.get('/', checkauth, sessionController.getMySessions);
 
 module.exports = router;

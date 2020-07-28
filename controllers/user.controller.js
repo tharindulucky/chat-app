@@ -27,7 +27,12 @@ function signUp(req, res){
                     models.User.create(user).then(result => {
                         res.status(201).json({
                             message: 'User Created Successfully',
-                            user: result
+                            user: {
+                                id:result.id,
+                                name: result.name,
+                                email: result.email,
+                                status: result.status
+                            }
                         });
                     }).catch(error => {
                         console.log(error);
