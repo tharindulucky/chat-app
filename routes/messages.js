@@ -5,6 +5,6 @@ const messageValidator = require('../validators/messages');
 
 const router = express.Router();
 
-router.post('/send', [checkauth,messageValidator.sendMessage], messageController.sendMessage);
+router.post('/send', [checkauth, messageValidator.sendMessage], messageController.sendMessage);
 
 module.exports = router;
