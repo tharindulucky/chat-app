@@ -1,5 +1,3 @@
-const express = require('express')
-const bodyParser = require('body-parser')
 const { body, validationResult } = require('express-validator');
 
 const registerValidation = [

@@ -1,6 +1,13 @@
 const models = require('../models');
+const { body, validationResult } = require('express-validator');
 
 function sendMessage(req, res){
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     models.Session.findOne({where: {id: req.body.sessionId}, limit: 1}).then(session => {
         if(session){
             const newMessage = {
@@ -20,6 +27,10 @@ function sendMessage(req, res){
                     message: "Message cannot be sent",
                     error: error
                 });
+            });
+        }else{
+            return res.status(500).json({
+                message: "Session not found"
             });
         }
     });

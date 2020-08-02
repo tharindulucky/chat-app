@@ -1,8 +1,14 @@
 const models = require('../models');
 var Sequelize = require('sequelize');
 var Op = Sequelize.Op;
+const { body, validationResult } = require('express-validator');
 
 function createSession(req, res){
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
 
     models.User.findOne({where: {email: req.body.email}, limit: 1}).then(user => {
 
