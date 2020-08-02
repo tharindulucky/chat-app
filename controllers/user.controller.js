@@ -2,8 +2,15 @@ const models = require('../models');
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv').config()
+const { body, validationResult } = require('express-validator');
 
 function signUp(req, res){
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     models.User.findOne({where: {email: req.body.email}, limit: 1}).then(user => {
         if(user){
             return res.status(409).json({
@@ -49,6 +56,12 @@ function signUp(req, res){
 
 
 function login(req, res){
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     models.User.findOne({where: {email: req.body.email}, limit: 1}).then(user => {
         if(user){
             bcrypt.compare(req.body.password, user.password, (err, result) => {
