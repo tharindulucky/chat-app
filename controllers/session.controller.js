@@ -17,7 +17,7 @@ function createSession(req, res){
             models.Session.findOne({
                 include: [{
                     model: models.SessionUser, 
-                    as: 'participants',
+                    as: 'allparticipants',
                     where: {
                         userId: user.id
                     },
@@ -51,7 +51,7 @@ function createSession(req, res){
                         ];
 
                         models.SessionUser.bulkCreate(participants).then(participants_result => {
-                            return res.status(200).json({
+                            return res.status(201).json({
                                 message: "Session created",
                                 session: newSession_result
                             });
