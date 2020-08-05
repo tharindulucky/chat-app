@@ -1,9 +1,9 @@
 const models = require('../models');
-const { body, validationResult } = require('express-validator');
+const messageValidator = require('../validators/messages');
 
 function sendMessage(req, res){
 
-    const errors = validationResult(req);
+    const errors = messageValidator.messageValidationFormatter(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }

@@ -1,11 +1,11 @@
 const models = require('../models');
 var Sequelize = require('sequelize');
 var Op = Sequelize.Op;
-const { body, validationResult } = require('express-validator');
+const sessionValidator = require('../validators/sessions');
 
 function createSession(req, res){
 
-    const errors = validationResult(req);
+    const errors = sessionValidator.sessionValidationFormatter(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
@@ -87,23 +87,34 @@ function createSession(req, res){
 
 function getMySessions(req, res){
     models.Session.findAll({
-        include: [{
-            model: models.SessionUser, 
-            as: 'participants',
-            include: [{
-                model: models.User, 
-                as: 'userData',
-                attributes: ['id','name','email'],
-            }]
-        }],
-        where:{authorId: req.userData.userId}
+        include: [
+            {
+                model: models.SessionUser, 
+                as: 'me',
+                include: [{
+                    model: models.User, 
+                    as: 'userData',
+                    attributes: ['id','name','email'],
+                }],
+                where:{userId: req.userData.userId},
+            },
+            {
+                model: models.SessionUser, 
+                as: 'allparticipants',
+                include: [{
+                    model: models.User, 
+                    as: 'userData',
+                    attributes: ['id','name','email'],
+                }]
+            }
+    ]
     }).then(sessions => {
 
         
 
         const sessionArr = sessions.map(session => {
             let contact = null;
-            session.participants.map(participant => {
+            session.allparticipants.map(participant => {
                 if(participant.userId != req.userData.userId){
                     contact = participant;
                 }
@@ -138,7 +149,7 @@ function getSession(req, res){
     models.Session.findOne({
         include: [{
             model: models.SessionUser, 
-            as: 'participants',
+            as: 'allparticipants',
             include: [{
                 model: models.User, 
                 as: 'userData',
@@ -149,14 +160,38 @@ function getSession(req, res){
             model: models.Message, 
             as: 'messages'
         }],
-        where:{id:id, authorId: req.userData.userId}
+        where:{id:id}
     }).then(session => {
 
+        var sessionAuthor = session.allparticipants.find( function( participant ) { 
+            return participant.userId === req.userData.userId;
+        });
+
+        if (sessionAuthor == null){
+            return res.status(404).json({
+                message: "Session not found"
+            });
+        }
+
         let contact = null;
-        session.participants.map(participant => {
+        session.allparticipants.map(participant => {
             if(participant.userId != req.userData.userId){
                 contact = participant;
             }
+        });
+
+        let messagesArr = [];
+        session.messages.forEach(message => {
+            messagesArr.push({
+                id:message.id,
+                content:message.content,
+                sessionId:message.sessionId,
+                authorId:message.authorId,
+                party: (message.authorId == req.userData.userId ? 'self' : 'other'),
+                status:message.status,
+                createdAt:message.createdAt,
+                updatedAt:message.updatedAt,
+            }); 
         });
 
         return res.status(200).json({
@@ -168,7 +203,7 @@ function getSession(req, res){
                 createdAt: session.createdAt,
                 updatedAt: session.updatedAt,
                 contact: contact,
-                messages: session.messages
+                messages: messagesArr
             }
         });
     }).catch(error => {

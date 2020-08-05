@@ -2,20 +2,19 @@ const models = require('../models');
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv').config()
-const { body, validationResult } = require('express-validator');
+const userValidator = require('../validators/users');
+const APIHelper = require('../helpers/APIHelper');
 
 function signUp(req, res){
 
-    const errors = validationResult(req);
+    const errors = userValidator.userValidationFormatter(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
     models.User.findOne({where: {email: req.body.email}, limit: 1}).then(user => {
         if(user){
-            return res.status(409).json({
-                message: "The email already exists"
-            });
+            return res.status(409).json(APIHelper.formatAPIErrorResponse('email', null, "The email already exists"));
         }else{
             bcrypt.hash(req.body.password, bcrypt.genSaltSync(10), null, (err, hash) => {
                 console.log(err)
@@ -57,7 +56,7 @@ function signUp(req, res){
 
 function login(req, res){
 
-    const errors = validationResult(req);
+    const errors = userValidator.userValidationFormatter(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
@@ -81,7 +80,12 @@ function login(req, res){
 
                     return res.status(200).json({
                         message: 'Authentication successful',
-                        token:token
+                        token:token,
+                        user:{
+                            name: user.name,
+                            email: user.email,
+                            status: user.status
+                        }
                     });
                 }else{
                     return  res.status(401).json({

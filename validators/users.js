@@ -10,7 +10,17 @@ const loginValidation = [
     body('email').isEmail().withMessage('Email must be a valid one'),
 ];
 
+const userValidationFormatter = validationResult.withDefaults({
+  formatter: (error) => {
+    return {
+        key: error.param,
+        message: error.msg,
+    };
+  }
+});
+
 module.exports = {
     registerValidation: registerValidation,
-    loginValidation: loginValidation
+    loginValidation: loginValidation,
+    userValidationFormatter: userValidationFormatter
 }
