@@ -82,6 +82,7 @@ function login(req, res){
                         message: 'Authentication successful',
                         token:token,
                         user:{
+                            id: user.id,
                             name: user.name,
                             email: user.email,
                             status: user.status

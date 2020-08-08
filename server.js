@@ -10,20 +10,39 @@ server.listen(port);
 /*
 Socket IO
 */
-var connectedClients = {};
+var allSockets = {}; //We keep this to store all the socket IDs. UserID is the Key. SocketID is the value.
+
+function getSocket(userID){ //We use user ID as the unique socket ID
+    return allSockets['chatter-'+userID];
+}
+
+function setSocket(userID, data){
+    allSockets['chatter-'+userID] = data;
+}
+
+function deleteSocket(userID){
+    delete allSockets['chatter-'+userID];
+}
 
 io.on('connection', (socket) => {
+
     console.log('a user connected');
 
-    socket.on('pingServer', (msg) => {
-        console.log('pingServer');
+    socket.on('userOnline', (userID) => {
+        console.log('userOnline-'+userID);
+        setSocket(userID, socket);
     });
 
-    
-    connectedClients['fffff'] = socket;
-    console.log(connectedClients[socket.nickname]);
-
-    socket.on('chatMessage', (to, message) => {
-        connectedClients['fffff'].emit('chatMessage', socket.nickname, message);
+    socket.on('userTyping', (toUserID) => {
+        if(getSocket(toUserID)){
+            getSocket(toUserID).emit('userTyping'); 
+        }
     });
+
+    socket.on('userChat', (toUserID) => {
+        if(getSocket(toUserID)){
+            getSocket(toUserID).emit('userChat'); 
+        }
+    });
+
 });
